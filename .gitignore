@@ -12,4 +12,4 @@ project/plugins/project/
 .history
 .cache
 .lib/
-/src/main/datasets/
+/src/datasets/
