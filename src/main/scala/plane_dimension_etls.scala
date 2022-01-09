@@ -93,7 +93,7 @@ object plane_dimension_etls extends App {
 
 
 
-    // check if df is not empty
+    // Check if df is not empty
 
 
 
