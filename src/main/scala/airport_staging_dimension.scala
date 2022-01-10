@@ -16,6 +16,7 @@ object airport_staging_dimension extends App{
   val waCsvPath="src/datasets/wac_dataset.csv"
 
 
+
   val airportInfoDF = spark.read
     .option("sep", ",")
     .option("header", true)
@@ -35,61 +36,110 @@ object airport_staging_dimension extends App{
     .csv(airportsCsvPath)
 
 
+
+
   //Airport data
-  val airportData = airportInfoDF.select(col("OriginAirportID").alias("code"),
-    col("OriginCityName").alias("city"),
-    col("OriginState").alias("state_code"),
-    col("OriginStateName").alias("state_name"),
-    col("OriginWac").alias("wac"))
-    .drop(col("_c109")).distinct()
-    .orderBy("city")
-  airportData.printSchema()
-  airportData.show(10,false)
-
-
-//Wac data
-  val wacDataDF = wacDF.select(col("world_area_code").alias("wac"),
-    col("country"))
-  wacDataDF.printSchema()
-  wacDataDF.show(10,false)
-
-
-  //Airport Dimension
-  import spark.implicits._
-  val airportDim = airportData.join(airportNameDF, Seq("Code"), "inner")
-    .join(wacDataDF, Seq("wac"), "inner")
+  val airportDataDF = airportNameDF
     .withColumn("airport_key", monotonically_increasing_id+ 1)
     .withColumn("name_city_code", split(col("Description"), ", "))
+    .withColumn("city", element_at(col("name_city_code"), 1))
     .withColumn("airport_citycode", element_at(col("name_city_code"), 2)).drop("name_city_code")
     .withColumn("city_code", split(col("airport_citycode"), ": ")).drop("airport_citycode")
     .withColumn("airport_name", element_at(col("city_code"), 2)).drop("city_code")
-    .withColumn("start_date",lit(java.time.LocalDate.now))
-    .withColumn("end_date", to_date(lit("9999-12-31")))
-    .withColumn("current_flag",  lit(true))
     .drop("Description")
-    .select(
-      lower($"code") as "code",
-      lower($"airport_key") as "airport_key",
-      lower($"airport_name") as "airport_name",
-      lower($"city") as "city",
-      lower($"state_code") as "state_code",
-      lower($"state_name") as "state_name",
-      $"wac",
-      lower($"country") as "country",
-      $"start_date",
-      $"end_date",
-      $"current_flag"
-    )
-  airportDim.printSchema()
-  airportDim.show(10,false)
+
+  //Test
+  airportDataDF.printSchema()
+  airportDataDF.show(10,false)
+  val qAirport = airportDataDF.select("code").count()
+  print("Airport quantities", qAirport)
 
 
-  val airportOutputPath="src/datasets/airport.parquet"
+
+
+
+  //Wac data
+  val wacDataDF = wacDF.select(col("world_area_code").alias("wac"),
+    col("country"))
+
+  //Test
+  wacDataDF.printSchema()
+  wacDataDF.show(10,false)
+  val qw = wacDataDF.select("wac").count()
+  print("WAC quantities", qw)
+
+
+
+
+
+  //Flight data
+  val flightAirportsData = airportInfoDF.select(col("OriginAirportID").alias("code"),
+   // col("OriginCityName").alias("city"),
+    col("OriginState").alias("state_code"),
+    col("OriginStateName").alias("state_name"),
+    col("OriginWac").alias("wac")).distinct()
+    .drop(col("_c109"))
+
+
+  //Test
+  flightAirportsData.printSchema()
+  flightAirportsData.show(10,false)
+  val qFlightsA = flightAirportsData.select("code").count()
+  print("Flight quantities", qFlightsA)
+
+
+
+
+  //Flight with WAC
+  val flightAirportData = flightAirportsData.join(wacDataDF, Seq("wac"), "left")
+
+  //Test
+  flightAirportData.printSchema()
+  flightAirportData.show(10, false)
+  val qFlightA = flightAirportsData.select("code").count()
+  print("Flight with WAC quantities", qFlightA)
+
+
+
+
+  //Airport Staging Dimension
+  import spark.implicits._
+  val airportStaging = airportDataDF.join(flightAirportData, Seq("code"), "left")
+  .select(
+    $"airport_key",
+    lower($"code") as "code",
+    lower($"airport_name") as "airport_name",
+    lower($"city") as "city",
+    lower($"state_code") as "state_code",
+    lower($"state_name") as "state_name",
+    $"wac".cast("String"),
+    lower($"country") as "country").na.fill("UNDEFINED")
+
+  //Test
+  airportStaging.printSchema()
+  airportStaging.show(20, false)
+  val qStaging = airportStaging.select("airport_key").count()
+  print("Airport data- staging", qStaging)
+
+
+
+  //Write staging
+  val airportStaging_location="src/datasets/staging_layer/airports"
   //sobreescribiendo en parquet
-  airportDim
+  airportStaging
     .write
     .option("compression", "snappy")
+    .format("parquet")
     .mode("overwrite")
-    .parquet(airportOutputPath)
+    .parquet(airportStaging_location)
+
+
+  //test
+  val testParquetStaging = spark.read.parquet(airportStaging_location)
+  testParquetStaging.show(false)
+  testParquetStaging.printSchema()
+
+  val qParquetStaging = testParquetStaging.select("code").distinct().count()
+  println("\n Staging data quantities ", qParquetStaging )
 
 }
