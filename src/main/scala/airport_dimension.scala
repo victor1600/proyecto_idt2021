@@ -16,12 +16,12 @@ object airport_dimension extends App {
   val stagingAirports = spark.read.parquet(staging_airports_location)
 
   //Def
-  //InicialLoad()
+  //InitialLoad()
   IncrementalLoad()
 
 
   //Inicial load
-  def InicialLoad(): Unit = {
+  def InitialLoad(): Unit = {
     val distinctAirport = stagingAirports
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
