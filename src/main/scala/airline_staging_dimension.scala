@@ -10,14 +10,14 @@ object airline_staging_dimension extends App {
 
 
   //dataset
-  val airlineCsvPath = "src/datasets/airline_name_carrier_dataset.csv"
+  val airlineCsvPath = "src/datasets/raw_layer/airline_name_carrier_dataset.csv"
   val airlineNameDF = spark.read
     .option("sep", ",")
     .option("header", true)
     .option("inferSchema", true)
     .csv(airlineCsvPath)
 
-  val airlineDescriptionCsvPath = "src/datasets/flights"
+  val airlineDescriptionCsvPath = "src/datasets/raw_layer/flights"
   val airlineDescDF = spark.read
     .option("sep", ",")
     .option("header", true)

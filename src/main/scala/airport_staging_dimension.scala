@@ -11,9 +11,9 @@ object airport_staging_dimension extends App{
 
 
   //Datasets
-  val airportsDescriptionCsvPath="src/datasets/flights"
-  val airportsCsvPath="src/datasets/airport_name_dataset.csv"
-  val waCsvPath="src/datasets/wac_dataset.csv"
+  val airportsDescriptionCsvPath="src/datasets/raw_layer/flights"
+  val airportsCsvPath="src/datasets/raw_layer/airport_name_dataset.csv"
+  val waCsvPath="src/datasets/raw_layer/wac_dataset.csv"
 
 
 
