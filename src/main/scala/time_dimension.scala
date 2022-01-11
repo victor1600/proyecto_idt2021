@@ -1,22 +1,21 @@
 import org.apache.spark.sql.SparkSession
 
-object date_dimension_staging extends App {
+object time_dimension extends App {
   val spark = SparkSession.builder
     .master("local[*]")
     .appName("proyecto_idt2021")
     .getOrCreate()
 
   //dataset
-  val datePath="src/datasets/raw_layer/date_dimension.csv"
-  val dateDF = spark.read
+  val timePath="src/datasets/raw_layer/time"
+  val timeDF = spark.read
     .option("sep", ";")
     .option("header", true)
     .option("inferSchema", true)
-    .csv(datePath)
+    .csv(timePath)
 
   //Date Staging Dimension
-  println("\n Date staging dimension")
-  dateDF.printSchema()
-  dateDF.show(5,false)
-
+  println("\n Time staging dimension")
+  timeDF.printSchema()
+  timeDF.show(5,false)
 }

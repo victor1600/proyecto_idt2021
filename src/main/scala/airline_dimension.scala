@@ -10,7 +10,7 @@ object airline_dimension extends App {
 
   //Actual version - Airline staging dimension
   val staging_airline_location = "src/datasets/staging_layer/airlines"
-  val stagingAirline = spark.read.parquet(staging_airline_location)
+  val stagingAirlineDF = spark.read.parquet(staging_airline_location)
 
   //Def inicial and incremental
   //InitialLoad()
@@ -19,21 +19,21 @@ object airline_dimension extends App {
 
   //Initial load
   def InitialLoad(): Unit = {
-    val distinctAirline = stagingAirline
+    val distinctAirlineDF = stagingAirlineDF
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
 
     //test
-    distinctAirline.show(20, false)
-    distinctAirline.printSchema()
-    val qAirline = distinctAirline.select("airline_key").count()
+    distinctAirlineDF.show(20, false)
+    distinctAirlineDF.printSchema()
+    val qAirline = distinctAirlineDF.select("airline_key").count()
     print("Airline quantities - inicialLoad", qAirline)
 
     //path - save
     val dim_airline_loc = "src/datasets/presentation_layer/dim_airline"
     //write
-    distinctAirline
+    distinctAirlineDF
       .write
       .option("compression", "snappy")
       .mode("overwrite")
@@ -41,9 +41,9 @@ object airline_dimension extends App {
 
 
     //test
-    val distinctAirlines = spark.read.parquet(dim_airline_loc)
+    val distinctAirlinesDF = spark.read.parquet(dim_airline_loc)
 
-    val qData = distinctAirlines.select("airline_key", "airline_name").count()
+    val qData = distinctAirlinesDF.select("airline_key").count()
     println("Data - presentation_layer", qData)
 
 
@@ -59,36 +59,36 @@ object airline_dimension extends App {
 
 
     //Reading Datasets
-    val currentDimAirline = spark.read.parquet(dim_airline_loc)
-    val qAirlineSave = currentDimAirline.select("airline_key").count()
+    val currentDimAirlineDF = spark.read.parquet(dim_airline_loc)
+    val qAirlineSave = currentDimAirlineDF.select("airline_key").count()
     println("\n Airline quantities - save \n", qAirlineSave)
 
 
     // Distinct row - staging
-    val distinctAirlines = stagingAirline
+    val distinctAirlinesDF = stagingAirlineDF
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
 
     //test
-    distinctAirlines.show(10, false)
-    distinctAirlines.printSchema()
-    val qAirline = distinctAirlines.select("airline_key").count()
+    distinctAirlinesDF.show(10, false)
+    distinctAirlinesDF.printSchema()
+    val qAirline = distinctAirlinesDF.select("airline_key").count()
     println("\n Airline quantities - staging \n", qAirline)
 
 
     //Search new rows
-    val newAirline = distinctAirlines.join(currentDimAirline, distinctAirlines("airline_key") === currentDimAirline("airline_key"), "leftanti")
+    val newAirlineDF = distinctAirlinesDF.join(currentDimAirlineDF, distinctAirlinesDF("carrier") === currentDimAirlineDF("carrier"), "leftanti")
 
     //test
-    val qAirlineNew = newAirline.select("airline_key").count()
+    val qAirlineNew = newAirlineDF.select("airline_key").count()
     print("\n Airline new \n", qAirlineNew)
-    newAirline.show(false)
-    newAirline.printSchema()
+    newAirlineDF.show(false)
+    newAirlineDF.printSchema()
 
 
     //Union with new rows
-    val newDimAirline = currentDimAirline.union(newAirline)
+    val newDimAirline = currentDimAirlineDF.union(newAirlineDF)
 
     //test union
     newDimAirline.show(10, false)
@@ -114,8 +114,8 @@ object airline_dimension extends App {
       .parquet(dim_airline_loc)
     println("Write new row - presentation_layer")
 
-    val newCurrentDimAirline = spark.read.parquet(dim_airline_loc)
-    val writeRows = newCurrentDimAirline.select("airline_key").count()
+    val newCurrentDimAirlineDF = spark.read.parquet(dim_airline_loc)
+    val writeRows = newCurrentDimAirlineDF.select("airline_key").count()
     println("\n Current \n", writeRows)
 
 
@@ -133,19 +133,19 @@ object airline_dimension extends App {
     def ChangeRows(): Unit = {
 
       //Autoincremet - airline_key
-      val next_pk_to_insert = distinctAirlines.agg(max("airline_key")).
+      val next_pk_to_insert = distinctAirlinesDF.agg(max("airline_key")).
         collectAsList().get(0).get(0).asInstanceOf[Long] + 1
 
 
       println("Verify other changes")
       //verify changes - airlines rows edit
-      val change = distinctAirlines.join(newCurrentDimAirline,
-        distinctAirlines("carrier") === newCurrentDimAirline("carrier") &&
-        distinctAirlines("airline_name") === newCurrentDimAirline("airline_name"),
+      val changeDF = distinctAirlinesDF.join(newCurrentDimAirlineDF,
+        distinctAirlinesDF("carrier") === newCurrentDimAirlineDF("carrier") &&
+          distinctAirlinesDF("airline_name") === newCurrentDimAirlineDF("airline_name"),
         "leftanti")
 
-      change.show(false)
-      val qAirlineChange = change.select("airline_key").count()
+      changeDF.show(false)
+      val qAirlineChange = changeDF.select("airline_key").count()
       println("\n Airline with change \n", qAirlineChange)
 
       if (qAirlineChange == 0) {
@@ -154,7 +154,7 @@ object airline_dimension extends App {
 
       } else {
 
-        val newRowAirline = change
+        val newRowAirlineDF = changeDF
           .select("carrier", "airline_name")
           .withColumn("airline_key", monotonically_increasing_id() + next_pk_to_insert)
           .withColumn("start_date", lit(java.time.LocalDate.now))
@@ -163,22 +163,22 @@ object airline_dimension extends App {
           .select("airline_key", "carrier", "airline_name", "start_date", "end_date", "current_flag")
 
         //test
-        newRowAirline.printSchema()
-        newRowAirline.show(false)
+        newRowAirlineDF.printSchema()
+        newRowAirlineDF.show(false)
         println("\n New rows with changes ")
 
         //Different rows without change
-        val differentRowAirline = newCurrentDimAirline.join(change,
-          newCurrentDimAirline("carrier") === change("carrier"),
+        val differentRowAirlineDF = newCurrentDimAirlineDF.join(changeDF,
+          newCurrentDimAirlineDF("carrier") === changeDF("carrier"),
           "leftanti")
-        differentRowAirline.show(false)
-        differentRowAirline.printSchema()
+        differentRowAirlineDF.show(false)
+        differentRowAirlineDF.printSchema()
         println("\n Different rows - NewRowAirline ")
 
 
         /* Dimension */
-        val changesRowAirline = newCurrentDimAirline.join(newRowAirline,
-          newCurrentDimAirline("carrier") === newRowAirline("carrier"),
+        val changesRowAirline = newCurrentDimAirlineDF.join(newRowAirlineDF,
+          newCurrentDimAirlineDF("carrier") === newRowAirlineDF("carrier"),
           "leftsemi")
           .drop("end_date")
           .drop("current_flag")
@@ -190,8 +190,8 @@ object airline_dimension extends App {
             col("start_date"),
             col("end_date"),
             col("current_flag"))
-          .union(differentRowAirline)
-          .union(newRowAirline)
+          .union(differentRowAirlineDF)
+          .union(newRowAirlineDF)
           .orderBy(desc("start_date"))
 
 
@@ -204,7 +204,7 @@ object airline_dimension extends App {
         //write - changes
         changesRowAirline
           .write
-          //  .option("compression", "snappy")
+          .option("compression", "snappy")
           .format("parquet")
           .mode("overwrite")
           .parquet(dim_airline_temp_loc)
@@ -212,7 +212,7 @@ object airline_dimension extends App {
 
         spark.read.parquet(dim_airline_temp_loc)
           .write
-          // .option("compression", "snappy")
+          .option("compression", "snappy")
           .format("parquet")
           .mode("overwrite")
           .parquet(dim_airline_loc)

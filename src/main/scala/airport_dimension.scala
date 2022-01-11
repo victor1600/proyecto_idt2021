@@ -22,21 +22,21 @@ object airport_dimension extends App {
 
   //Inicial load
   def InitialLoad(): Unit = {
-    val distinctAirport = stagingAirports
+    val distinctAirportDF = stagingAirports
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
 
     //test
-    distinctAirport.show(20, false)
-    distinctAirport.printSchema()
-    val qAirport = distinctAirport.select("airport_key").count()
+    distinctAirportDF.show(20, false)
+    distinctAirportDF.printSchema()
+    val qAirport = distinctAirportDF.select("airport_key").count()
     print("Airport quantities - inicialLoad", qAirport)
 
     //path - save
     val dim_airport_loc = "src/datasets/presentation_layer/dim_airport"
     //write
-    distinctAirport
+    distinctAirportDF
       .write
       .option("compression", "snappy")
       .mode("overwrite")
@@ -44,9 +44,9 @@ object airport_dimension extends App {
 
 
     //test
-    val distinctAirports = spark.read.parquet(dim_airport_loc)
+    val distinctAirportsDF = spark.read.parquet(dim_airport_loc)
 
-    val qData = distinctAirports.select("airport_key", "airport_name").count()
+    val qData = distinctAirportsDF.select("airport_key", "airport_name").count()
     println("Data - presentation_layer", qData)
 
 
@@ -62,36 +62,36 @@ object airport_dimension extends App {
 
 
     //Reading Datasets
-    val currentDimAirport = spark.read.parquet(dim_airport_loc)
-    val qAirportSave = currentDimAirport.select("airport_key").count()
+    val currentDimAirportDF = spark.read.parquet(dim_airport_loc)
+    val qAirportSave = currentDimAirportDF.select("airport_key").count()
     println("\n Airport quantities - save \n", qAirportSave)
 
 
     // Distinct row - staging
-    val distinctAirports = stagingAirports
+    val distinctAirportsDF = stagingAirports
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
 
     //test
-    distinctAirports.show(10, false)
-    distinctAirports.printSchema()
-    val qAirport = distinctAirports.select("airport_key").count()
+    distinctAirportsDF.show(10, false)
+    distinctAirportsDF.printSchema()
+    val qAirport = distinctAirportsDF.select("airport_key").count()
     println("\n Airport quantities - staging \n", qAirport)
 
 
     //Search new rows
-    val newAirport = distinctAirports.join(currentDimAirport, distinctAirports("airport_key") === currentDimAirport("airport_key"), "leftanti")
+    val newAirportDF = distinctAirportsDF.join(currentDimAirportDF, distinctAirportsDF("code") === currentDimAirportDF("code"), "leftanti")
 
     //test
-    val qAirportNew = newAirport.select("airport_key").count()
+    val qAirportNew = newAirportDF.select("airport_key").count()
     print("\n Airport new \n", qAirportNew)
-    newAirport.show(false)
-    newAirport.printSchema()
+    newAirportDF.show(false)
+    newAirportDF.printSchema()
 
 
     //Union with new rows
-    val newDimAirport = currentDimAirport.union(newAirport)
+    val newDimAirport = currentDimAirportDF.union(newAirportDF)
 
     //test union
     newDimAirport.show(10, false)
@@ -117,8 +117,8 @@ object airport_dimension extends App {
       .parquet(dim_airport_loc)
     println("Write new row - presentation_layer")
 
-    val newCurrentDimAirport = spark.read.parquet(dim_airport_loc)
-    val writeRows = newCurrentDimAirport.select("airport_key").count()
+    val newCurrentDimAirportDF = spark.read.parquet(dim_airport_loc)
+    val writeRows = newCurrentDimAirportDF.select("airport_key").count()
     println("\n Current \n", writeRows)
 
 
@@ -140,20 +140,19 @@ object airport_dimension extends App {
     def ChangeRows(): Unit = {
 
       //Autoincremet - airport_key
-      val next_pk_to_insert = distinctAirports.agg(max("airport_key")).
+      val next_pk_to_insert = distinctAirportsDF.agg(max("airport_key")).
         collectAsList().get(0).get(0).asInstanceOf[Long] + 1
 
 
       println("Verify other changes")
       //verify changes - airports rows edit
-      val change = distinctAirports.join(newCurrentDimAirport,
-        distinctAirports("code") === newCurrentDimAirport("code") &&
-          distinctAirports("airport_name") === newCurrentDimAirport("airport_name") &&
-          distinctAirports("city") === newCurrentDimAirport("city") &&
-          distinctAirports("state_code") === newCurrentDimAirport("state_code") &&
-          distinctAirports("state_name") === newCurrentDimAirport("state_name") &&
-          distinctAirports("wac") === newCurrentDimAirport("wac") &&
-          distinctAirports("country") === newCurrentDimAirport("country"),
+      val change = distinctAirportsDF.join(newCurrentDimAirportDF,
+        distinctAirportsDF("airport_name") === newCurrentDimAirportDF("airport_name") &&
+        distinctAirportsDF("city") === newCurrentDimAirportDF("city") &&
+        distinctAirportsDF("state_code") === newCurrentDimAirportDF("state_code") &&
+        distinctAirportsDF("state_name") === newCurrentDimAirportDF("state_name") &&
+        distinctAirportsDF("wac") === newCurrentDimAirportDF("wac") &&
+        distinctAirportsDF("country") === newCurrentDimAirportDF("country"),
         "leftanti")
 
       change.show(false)
@@ -166,7 +165,7 @@ object airport_dimension extends App {
 
       } else {
 
-        val newRowAirport = change
+        val newRowAirportDF = change
           // .withColumn("airport_key", monotonically_increasing_id() + next_pk_to_insert)
           .select("code", "airport_name", "city", "state_code", "state_name", "wac", "country")
           .withColumn("airport_key", monotonically_increasing_id() + next_pk_to_insert)
@@ -177,23 +176,23 @@ object airport_dimension extends App {
             "state_name", "wac", "country", "start_date", "end_date", "current_flag")
 
         //test
-        newRowAirport.printSchema()
-        newRowAirport.show(false)
+        newRowAirportDF.printSchema()
+        newRowAirportDF.show(false)
         println("\n New rows with changes ")
 
         //Different rows without change
-        val differentRowAirport = newCurrentDimAirport.join(change,
-          newCurrentDimAirport("code") === change("code"),
+        val differentRowAirportDF = newCurrentDimAirportDF.join(change,
+          newCurrentDimAirportDF("code") === change("code"),
           "leftanti")
-        differentRowAirport.show(false)
-        differentRowAirport.printSchema()
+        differentRowAirportDF.show(false)
+        differentRowAirportDF.printSchema()
         println("\n Different rows - NewRowAirport ")
 
 
         /*Rows with match code, drop columns end_date and current_flag,
          new columns end date and current_flag and UNION with new rows, different to new rows and changes */
-        val changesRowAirport = newCurrentDimAirport.join(newRowAirport,
-          newCurrentDimAirport("code") === newRowAirport("code"),
+        val changesRowAirportDF = newCurrentDimAirportDF.join(newRowAirportDF,
+          newCurrentDimAirportDF("code") === newRowAirportDF("code"),
           "leftsemi")
           .drop("end_date")
           .drop("current_flag")
@@ -210,19 +209,18 @@ object airport_dimension extends App {
             col("start_date"),
             col("end_date"),
             col("current_flag"))
-          .union(differentRowAirport)
-          .union(newRowAirport)
-          .orderBy(desc("start_date"))
+          .union(differentRowAirportDF)
+          .union(newRowAirportDF)
+          .orderBy(asc("code"))
 
 
         //test
-        changesRowAirport.show(false)
-        changesRowAirport.printSchema()
-        val airportRows = changesRowAirport.select("airport_key").count()
-
+        changesRowAirportDF.show(false)
+        changesRowAirportDF.printSchema()
+        val airportRows = changesRowAirportDF.select("airport_key").count()
 
         //write - changes
-        changesRowAirport
+        changesRowAirportDF
           .write
           //  .option("compression", "snappy")
           .format("parquet")

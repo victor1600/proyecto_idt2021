@@ -8,19 +8,23 @@ object monthly_dimension_staging extends App {
     .getOrCreate()
 
   //dataset
-  val datePath="src/datasets/raw_layer/date_dimension.csv"
+  val datePath="src/datasets/raw_layer/date"
   val dateDF = spark.read
     .option("sep", ";")
     .option("header", true)
     .option("inferSchema", true)
     .csv(datePath)
 
-  //dateDF.printSchema()
-  //dateDF.show(5,false)
+
 
   //Monthly Staging Dimension
   val monthlyStaging = dateDF.withColumn("monthly_key", monotonically_increasing_id + 1)
     .select(col("monthly_key"), col("calendar_month"), col("calenda_quarter"), col("calendar_year"))
+
+  val writeRows = monthlyStaging.select("calendar_month").count()
+  println("\n Meses del año \n", writeRows)
+
+
 
   println("\n Monthly staging dimension")
   monthlyStaging.printSchema()

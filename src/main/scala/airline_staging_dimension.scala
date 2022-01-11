@@ -10,7 +10,7 @@ object airline_staging_dimension extends App {
 
 
   //dataset
-  val airlineCsvPath = "src/datasets/raw_layer/airline_name_carrier_dataset.csv"
+  val airlineCsvPath = "src/datasets/raw_layer/airline"
   val airlineNameDF = spark.read
     .option("sep", ",")
     .option("header", true)
@@ -33,27 +33,27 @@ object airline_staging_dimension extends App {
 
   import spark.implicits._
 
-  val airlineStaging = airlineNameDF.join(airlineCarrierDF, Seq("code"), "left")
+  val airlineStagingDF = airlineNameDF.join(airlineCarrierDF, Seq("code"), "left")
     .distinct()
     .withColumn("airline_key", monotonically_increasing_id + 1)
     .withColumnRenamed("Description", "airline_name")
     .select(
       $"airline_key",
       $"code" as "carrier",
-      lower($"airline_name") as "airline_name").na.fill("UNDEFINED")
+      lower($"airline_name") as "airline_name").na.fill("undefined")
 
   println("\n Airline staging dimension")
-  airlineStaging.printSchema()
-  airlineStaging.show(false)
+  airlineStagingDF.printSchema()
+  airlineStagingDF.show(false)
 
-  val qStaging = airlineStaging.count()
+  val qStaging = airlineStagingDF.count()
   print("Airline data- staging", qStaging)
 
 
   //Write staging
   val airlineStaging_location = "src/datasets/staging_layer/airlines"
   //sobreescribiendo en parquet
-  airlineStaging
+  airlineStagingDF
     .write
     .option("compression", "snappy")
     .format("parquet")
