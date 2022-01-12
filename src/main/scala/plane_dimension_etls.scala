@@ -36,30 +36,28 @@ object plane_dimension_etls extends App {
         col("Serial Number").alias("serial_number"),
         col("MFR MDL Code").alias("aircraft_mfr_model"),
         col("Year MFR").alias("year_mfr"),
-        col("City").alias("registrant_city"),
-        col("State").alias("registrant_state"),
-        col("Street 1").alias("registrant_street"),
+        lower(col("City")).alias("registrant_city"),
+        lower(col("State")).alias("registrant_state"),
+        lower(col("Street 1")).alias("registrant_street"),
         col("Eng MFR Code").alias("eng_mfr_model_code"),
-        col("eng mfr name").alias("eng_mfr_name"),
-        col("engine model name").alias("eng_model_name"),
-        col("horsepower").alias("eng_horse_power")).na.fill("UNDEFINED")
+        lower(col("eng mfr name")).alias("eng_mfr_name"),
+        lower(col("engine model name")).alias("eng_model_name"),
+        col("horsepower").alias("eng_horse_power")).na.fill("undefined")
 
         planes_engines.write.mode(SaveMode.Overwrite).parquet(stg_path)
 
         planes_engines
 
-
-
   }
 
   def full_load(df:DataFrame, df_write_path:String="src/datasets/presentation")={
 
-//    df.withColumn("start_date",lit(java.time.LocalDate.now))
-//      .withColumn("end_date", to_date(lit("9999-12-31")))
-//      .withColumn("current_flag",  lit(true))
+    df.withColumn("start_date",lit(java.time.LocalDate.now))
+      .withColumn("end_date", to_date(lit("9999-12-31")))
+      .withColumn("current_flag",  lit(true))
       df.withColumn("plane_key", monotonically_increasing_id +1)
-//      .show(5)
-      .write.mode(SaveMode.Overwrite).parquet(df_write_path)
+      .show(5)
+      //.write.mode(SaveMode.Overwrite).parquet(df_write_path)
 
   }
 
@@ -109,12 +107,12 @@ object plane_dimension_etls extends App {
   val engines_origin_path="src/datasets/engines.csv"
   val planes_full_origin_path="src/datasets/planes.csv"
 //
-//  val stg_df = prepare_stg_planes(engines_origin_path,planes_full_origin_path)
-//  full_load(stg_df)
-  val planes_incremental_origin_path="src/datasets/planes_new.csv"
-  val stg_df_incremental = prepare_stg_planes(engines_origin_path,planes_incremental_origin_path)
-  val presentation_df_path: String="src/datasets/presentation"
-  val staging_dataset: String="src/datasets/staging"
-  incremental_load(presentation_df_path, staging_dataset)
+  val stg_df = prepare_stg_planes(engines_origin_path,planes_full_origin_path)
+  full_load(stg_df)
+//  val planes_incremental_origin_path="src/datasets/planes_new.csv"
+//  val stg_df_incremental = prepare_stg_planes(engines_origin_path,planes_incremental_origin_path)
+//  val presentation_df_path: String="src/datasets/presentation"
+//  val staging_dataset: String="src/datasets/staging"
+//  incremental_load(presentation_df_path, staging_dataset)
 
 }
