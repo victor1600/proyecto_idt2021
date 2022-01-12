@@ -56,13 +56,13 @@ object plane_dimension_etls extends App {
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag",  lit(true))
       df.withColumn("plane_key", monotonically_increasing_id +1)
-      .show(5)
-      //.write.mode(SaveMode.Overwrite).parquet(df_write_path)
+      //.show(5)
+      .write.mode(SaveMode.Overwrite).parquet(df_write_path)
 
   }
 
-  def incremental_load(presentation_df_path: String="src/datasets/presentation", staging_dataset: String="src/datasets/staging")={
-    val temp_presentation_df_path = presentation_df_path
+  def incremental_load(presentation_df_path: String="src/datasets/presentation", staging_df: DataFrame)={
+    val temp_presentation_df_path = "src/datasets/tmp"
     val current_df = spark.read.parquet(presentation_df_path)
     val staging_df =  spark.read.parquet(staging_dataset)
 
@@ -73,13 +73,15 @@ object plane_dimension_etls extends App {
     //val new_values_count = new_values.count()
     if(new_values.count() != 0){
       // If there are new values
+
       val next_pk_to_insert = current_df.agg(max("plane_key")).
         collectAsList().get(0).get(0).asInstanceOf[Long] +1
 
       val new_values_with_pk = new_values.withColumn("plane_key", monotonically_increasing_id +next_pk_to_insert)
+      new_values_with_pk.show(5)
       val newDimValues = current_df.union(new_values_with_pk)
 
-      newDimValues.show(5)
+//      newDimValues.show(5)
       newDimValues.write.mode(SaveMode.Overwrite).parquet(temp_presentation_df_path)
       spark.read.parquet(temp_presentation_df_path).write.mode(SaveMode.Overwrite).parquet(presentation_df_path)
       println("New rows written")
@@ -108,11 +110,11 @@ object plane_dimension_etls extends App {
   val planes_full_origin_path="src/datasets/planes.csv"
 //
   val stg_df = prepare_stg_planes(engines_origin_path,planes_full_origin_path)
-  full_load(stg_df)
-//  val planes_incremental_origin_path="src/datasets/planes_new.csv"
-//  val stg_df_incremental = prepare_stg_planes(engines_origin_path,planes_incremental_origin_path)
-//  val presentation_df_path: String="src/datasets/presentation"
-//  val staging_dataset: String="src/datasets/staging"
-//  incremental_load(presentation_df_path, staging_dataset)
+//  full_load(stg_df)
+  val planes_incremental_origin_path="src/datasets/planes_new.csv"
+  val stg_df_incremental = prepare_stg_planes(engines_origin_path,planes_incremental_origin_path)
+  val presentation_df_path: String="src/datasets/presentation"
+  val staging_dataset: String="src/datasets/staging"
+  incremental_load(presentation_df_path, stg_df_incremental)
 
 }
