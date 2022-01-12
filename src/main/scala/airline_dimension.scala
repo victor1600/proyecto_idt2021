@@ -9,17 +9,17 @@ object airline_dimension extends App {
     .getOrCreate()
 
   //Actual version - Airline staging dimension
-  val staging_airline_location = "src/datasets/staging_layer/airlines"
+  val staging_airline_location = "src/datasets/staging_layer/airline_staging"
   val stagingAirlineDF = spark.read.parquet(staging_airline_location)
 
   //Def inicial and incremental
-  //InitialLoad()
-  IncrementalLoad()
+  InitialLoad()
+  //IncrementalLoad()
 
 
   //Initial load
   def InitialLoad(): Unit = {
-    val distinctAirlineDF = stagingAirlineDF
+    val distinctAirlineDF = stagingAirlineDF.distinct()
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
@@ -31,7 +31,7 @@ object airline_dimension extends App {
     print("Airline quantities - inicialLoad", qAirline)
 
     //path - save
-    val dim_airline_loc = "src/datasets/presentation_layer/dim_airline"
+    val dim_airline_loc = "src/datasets/presentation_layer/airline_dimension"
     //write
     distinctAirlineDF
       .write
@@ -54,8 +54,8 @@ object airline_dimension extends App {
   def IncrementalLoad(): Unit = {
 
     //path - save
-    val dim_airline_loc = "src/datasets/presentation_layer/dim_airline"
-    val dim_airline_temp_loc = "src/datasets/presentation_layer/temp/dim_airline"
+    val dim_airline_loc = "src/datasets/presentation_layer/airline_dimension"
+    val dim_airline_temp_loc = "src/datasets/presentation_layer/temp/airline_dimension"
 
 
     //Reading Datasets

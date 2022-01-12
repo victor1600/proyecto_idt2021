@@ -124,7 +124,7 @@ object airport_staging_dimension extends App{
 
 
   //Write staging
-  val airportStaging_location="src/datasets/staging_layer/airports"
+  val airportStaging_location="src/datasets/staging_layer/airport_staging"
   //sobreescribiendo en parquet
   airportStagingDF
     .write
@@ -139,7 +139,7 @@ object airport_staging_dimension extends App{
   testParquetStaging.show(false)
   testParquetStaging.printSchema()
 
-  val qParquetStaging = testParquetStaging.select("code").distinct().count()
+  val qParquetStaging = testParquetStaging.select("airport_key").distinct().count()
   println("\n Staging data quantities ", qParquetStaging )
 
 }

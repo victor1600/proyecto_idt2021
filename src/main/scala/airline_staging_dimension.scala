@@ -51,7 +51,7 @@ object airline_staging_dimension extends App {
 
 
   //Write staging
-  val airlineStaging_location = "src/datasets/staging_layer/airlines"
+  val airlineStaging_location = "src/datasets/staging_layer/airline_staging"
   //sobreescribiendo en parquet
   airlineStagingDF
     .write

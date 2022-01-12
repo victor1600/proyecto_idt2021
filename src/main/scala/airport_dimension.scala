@@ -12,17 +12,18 @@ object airport_dimension extends App {
     .getOrCreate()
 
   //Actual version - Airport staging dimension
-  val staging_airports_location = "src/datasets/staging_layer/airports"
+  val staging_airports_location = "src/datasets/staging_layer/airport_staging"
   val stagingAirports = spark.read.parquet(staging_airports_location)
 
   //Def
   //InitialLoad()
+
   IncrementalLoad()
 
 
   //Inicial load
   def InitialLoad(): Unit = {
-    val distinctAirportDF = stagingAirports
+    val distinctAirportDF = stagingAirports.distinct()
       .withColumn("start_date", lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
       .withColumn("current_flag", lit(true))
@@ -34,7 +35,7 @@ object airport_dimension extends App {
     print("Airport quantities - inicialLoad", qAirport)
 
     //path - save
-    val dim_airport_loc = "src/datasets/presentation_layer/dim_airport"
+    val dim_airport_loc = "src/datasets/presentation_layer/airport_dimension"
     //write
     distinctAirportDF
       .write
@@ -57,8 +58,8 @@ object airport_dimension extends App {
   def IncrementalLoad(): Unit = {
 
     //path - save
-    val dim_airport_loc = "src/datasets/presentation_layer/dim_airport"
-    val dim_airport_temp_loc = "src/datasets/presentation_layer/temp/dim_airport"
+    val dim_airport_loc = "src/datasets/presentation_layer/airport_dimension"
+    val dim_airport_temp_loc = "src/datasets/presentation_layer/temp/airport_dimension"
 
 
     //Reading Datasets

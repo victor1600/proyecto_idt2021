@@ -1,5 +1,5 @@
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{col, monotonically_increasing_id}
+import org.apache.spark.sql.functions._
 
 object monthly_dimension_staging extends App {
   val spark = SparkSession.builder
@@ -16,37 +16,61 @@ object monthly_dimension_staging extends App {
     .csv(datePath)
 
 
+  //Derivated Dimension
+  val monthlyDataDF = dateDF
+    .select(
+      col("calendar_month").alias("month"),
+      col("calenda_quarter").alias("quarter"),
+      col("calendar_year").alias("year")).distinct()
+    .orderBy("calendar_year")
 
-  //Monthly Staging Dimension
-  val monthlyStaging = dateDF.withColumn("monthly_key", monotonically_increasing_id + 1)
-    .select(col("monthly_key"), col("calendar_month"), col("calenda_quarter"), col("calendar_year"))
-
-  val writeRows = monthlyStaging.select("calendar_month").count()
-  println("\n Meses del año \n", writeRows)
-
-
-
-  println("\n Monthly staging dimension")
-  monthlyStaging.printSchema()
-  monthlyStaging.show(5,false)
-
-  val qStaging = monthlyStaging.count()
+  //test
+  monthlyDataDF.show(false)
+  val qStaging = monthlyDataDF.count()
   print("Monthly data- staging", qStaging)
 
+
+
+  //Monthly dimension
+  val monthlyStagingDF = monthlyDataDF
+    .withColumn("monthly_key", monotonically_increasing_id + 1)
+    .orderBy("calendar_year")
+
+
+  //test
+  monthlyStagingDF.show(false)
+  val qS = monthlyStagingDF.count()
+  print("Monthly data- staging", qS)
+
+
   //Write Staging
-  val monthlyStaging_location = "src/datasets/staging_layer/monthly"
+  val monthlyStaging_location = "src/datasets/staging_layer/monthly_staging"
   //sobreescribiendo en parquet
-  monthlyStaging
+  monthlyStagingDF
     .write
     .option("compression", "snappy")
     .format("parquet")
     .mode("overwrite")
     .parquet(monthlyStaging_location)
 
-  val testParquetStaging = spark.read.parquet(monthlyStaging_location)
-  testParquetStaging.show(false)
-  testParquetStaging.printSchema()
+  //Write Presentation
+  val monthly_location = "src/datasets/presentation_layer/monthly_dimension"
+  //sobreescribiendo en parquet
+  monthlyStagingDF
+    .write
+    .option("compression", "snappy")
+    .format("parquet")
+    .mode("overwrite")
+    .parquet(monthly_location)
 
-  val qParquetStaging = testParquetStaging.select("monthly_key").distinct().count()
+
+
+  val testParquetStagingDF = spark.read.parquet(monthlyStaging_location)
+  testParquetStagingDF.show(false)
+  testParquetStagingDF.printSchema()
+
+  val qParquetStaging = testParquetStagingDF.select("monthly_key").distinct().count()
   println("\n Staging data quantities ", qParquetStaging)
+
+
 }
