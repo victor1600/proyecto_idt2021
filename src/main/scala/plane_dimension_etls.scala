@@ -25,7 +25,7 @@ object plane_dimension_etls extends App {
   }
 
   def prepare_stg_planes(engines_origin_path:String="src/datasets/engines.csv", planes_origin_path:String = "src/datasets/planes_new.csv") = {
-    val stg_path = "src/datasets/staging"
+    val stg_path = "src/datasets/staging_layer/plane_dimension"
 
     val engines_origin =  read_dataframe(engines_origin_path)
 
@@ -50,7 +50,7 @@ object plane_dimension_etls extends App {
 
   }
 
-  def full_load(df:DataFrame, df_write_path:String="src/datasets/presentation")={
+  def full_load(df:DataFrame, df_write_path:String="src/datasets/presentation_layer/plane_dimension")={
 
     df.withColumn("start_date",lit(java.time.LocalDate.now))
       .withColumn("end_date", to_date(lit("9999-12-31")))
@@ -61,17 +61,14 @@ object plane_dimension_etls extends App {
 
   }
 
-  def incremental_load(presentation_df_path: String="src/datasets/presentation", staging_df: DataFrame)={
-    val temp_presentation_df_path = "src/datasets/tmp"
+  def incremental_load(presentation_df_path: String="src/datasets/presentation_layer/plane_dimension", staging_df: DataFrame)={
+    val temp_presentation_df_path = "src/datasets/presentation_layer/temp"
     val current_df = spark.read.parquet(presentation_df_path)
-    current_df.show(5)
     val staging_df =  spark.read.parquet(staging_dataset)
 
     val new_values = staging_df.join(current_df,
       staging_df("n_number")===current_df("n_number"), "leftanti")
-        //new_values.show(5)
     // if new values, append to existing df
-    //val new_values_count = new_values.count()
     if(new_values.count() != 0){
       // If there are new values
 
@@ -84,11 +81,9 @@ object plane_dimension_etls extends App {
         .withColumn("current_flag",  lit(true))
         .withColumn("plane_key", monotonically_increasing_id +next_pk_to_insert)
 
-      //new_values_with_pk.show(5)
       val newDimValues = current_df.union(new_values_with_pk)
       newDimValues.orderBy(desc("plane_key")).show(10)
 
-//      newDimValues.show(5)
       newDimValues.write.mode(SaveMode.Overwrite).parquet(temp_presentation_df_path)
       spark.read.parquet(temp_presentation_df_path).write.mode(SaveMode.Overwrite).parquet(presentation_df_path)
       println("New rows written")
@@ -120,8 +115,8 @@ object plane_dimension_etls extends App {
   full_load(stg_df)
   val planes_incremental_origin_path="src/datasets/planes_new.csv"
   val stg_df_incremental = prepare_stg_planes(engines_origin_path,planes_incremental_origin_path)
-  val presentation_df_path: String="src/datasets/presentation"
-  val staging_dataset: String="src/datasets/staging"
+  val presentation_df_path: String="src/datasets/presentation_layer/plane_dimension"
+  val staging_dataset: String="src/datasets/staging_layer"
   incremental_load(presentation_df_path, stg_df_incremental)
 
 }
