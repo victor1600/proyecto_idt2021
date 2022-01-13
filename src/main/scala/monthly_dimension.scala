@@ -1,7 +1,7 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 
-object monthly_dimension_staging extends App {
+object monthly_dimension extends App {
   val spark = SparkSession.builder
     .master("local[*]")
     .appName("proyecto_idt2021")
@@ -14,7 +14,7 @@ object monthly_dimension_staging extends App {
     .option("header", true)
     .option("inferSchema", true)
     .csv(datePath)
-
+  dateDF.show(false)
 
   //Derivated Dimension
   val monthlyDataDF = dateDF
