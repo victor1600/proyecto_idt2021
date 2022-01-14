@@ -81,12 +81,14 @@ object plane_dimension_etls extends App {
         .withColumn("current_flag",  lit(true))
         .withColumn("plane_key", monotonically_increasing_id +next_pk_to_insert)
 
-      //      new_rows_scd2.show(5)
+       new_rows_scd2.show(20)
 
       val rows_to_update = current_df.join(staging_df,
         staging_df("n_number")===current_df("n_number"), "leftsemi")
         .withColumn("current_flag", lit(false))
         .withColumn("end_date", lit(java.time.LocalDate.now))
+
+      rows_to_update.show(20)
 
       val unchanged_rows = current_df.join(staging_df,
         staging_df("n_number")===current_df("n_number"), "leftanti")
