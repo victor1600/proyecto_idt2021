@@ -1,7 +1,19 @@
 # MODELO MULTIDIMENSIONAL PARA EL PROCESO DE NEGOCIO DE VUELOS DE LAS COMPAÑÍAS ESTADOUNIDENSES
 ***
 
-## INTRODUCCION A LA LOGICA DEL NEGOCIO 
+# TABLA DE CONTENIDO
+- [INTRODUCCION A LA LOGICA DEL NEGOCIO](#introduccion-a-la-logica-del-negocio)
+- [RESULTADOS DEL DATA PROFILING](#resultados-del-data-profiling)
+- [MODELO DIMENSIONAL PROPUESTO](#modelo-dimensional-propuesto)
+  - [Vuelos diarios](#vuelos-diarios)
+  - [Pasajeros y cargamento del avión](#pasajeros-y-cargamento-del-avin)
+- [ARQUITECTURA DEL DATA LAKE](#arquitectura-del-data-lake)
+  - [Componentes de la arquitectura](#arquitectura-del-data-lake)
+- [ENTREGABLES](#entregables)
+  - [Scripts de spark utilizados para ETL](#scripts-de-spark-utilizados-para-etl)
+  - [Scripts de creación de tablas en redshift](#scripts-de-creacin-de-tablas-en-redshift)
+***
+## INTRODUCCION A LA LOGICA DEL NEGOCIO
 <p style="text-align:justify">Hoy en día trasladarse de un lugar dentro o fuera del país es una necesidad que todas las personas
 hacemos para cumplir con diligencias personales, laborales, de estudio entre otras. Siendo los medios
 de transporte un factor esencial en la vida cotidiana. Tomando como referencia los viajes es evidente
@@ -36,30 +48,31 @@ ayuda en la toma de decisiones; para ello se ha tomado como análisis un conjunt
 las compañías de vuelos estadounidenses, del cual se ha realizado de manera general el
 planteamiento del problema mediante enfoque de sistemas que se detalla en los siguientes puntos.</p>
 
+***
 ##RESULTADOS DEL DATA PROFILING
 
 Mediante Pandas Profiling se realizó un análisis detallado de cada dataset utilizado para crear el data
 warehouse, el resultado de dicho análisis general es el siguiente:
 
-1. Profiling Airlines
-2. Profiling Airports
-3. Profiling Fligths
-4. Profiling Passangers
-5. Profiling Planes
-6. Profiling WAC
+1. [Profiling Airlines](./src/data profiling/Airline.html)
+2. [Profiling Airports](./src/data profiling/Airport.html)
+3. [Profiling Flights](./src/data profiling/Fligth.html)
+4. [Profiling Passangers](./src/data profiling/Passangers.html)
+5. [Profiling Planes](./src/data profiling/Plane.html)
+6. [Profiling WAC](./src/data profiling/WAC.html)
 
+***
 ## MODELO DIMENSIONAL PROPUESTO
 ### Vuelos diarios
-**PASO 1: Seleccionar el proceso de negocio.**
-
-*Vuelos diarios de aerolíneas de Estados Unidos en los años 2016 y 2017*
-
 <p style="text-align:justify">
 NECECIDADES DEL NEGOCIO
 
 a. El negocio quiere entender el comportamiento de los vuelos en un periodo de tiempo.<br>
 b. Los datos permiten el análisis de vuelos diariamente, contiene horarios de salida y llegada, programados y reales, motivo del retraso reportados por
 las compañías aéreas estadounidenses.</p>
+**PASO 1: Seleccionar el proceso de negocio.**
+
+*Vuelos diarios de aerolíneas de Estados Unidos en los años 2016 y 2017*
 
 **PASO 2: Declaración de la granularidad de cada fact table**
 
@@ -122,12 +135,11 @@ Declaración de granularidad: vuelo por día.
 ✓ Taxi_out: Tiempo de salida de taxi (minutos)
 
 **MODELO DIMENSIONAL**
+***
 ![Imagen del Modelo Dimensional](./src/images/flight_fact.jpg)
+***
 
 ### Pasajeros y cargamento del avión
-**PASO 1: Seleccionar el proceso de negocio**
-
-*Gestión de vuelos (pasajeros y cargamentos) de las aerolíneas y aeropuertos de Estados Unidos en los años 2016 y 2017*
 <p style="text-align:justify">
 NECECIDADES DEL NEGOCIO
 
@@ -136,6 +148,10 @@ de tiempo.<br>
 b. Los datos permiten el análisis de vuelos mensual, contiene horarios de salida y llegada, programados y reales de las compañías aéreas
 estadounidenses.
 </p>
+
+**PASO 1: Seleccionar el proceso de negocio**
+
+*Gestión de vuelos (pasajeros y cargamentos) de las aerolíneas y aeropuertos de Estados Unidos en los años 2016 y 2017*
 
 **PASO 2: Declaración de la granularidad.**
 
@@ -165,45 +181,60 @@ Dimension del modelo
 ✓ Mail: Correo de mercadeo en vuelo incluido (libras)
 
 **MODELO DIMENSIONAL**
+***
 ![Imagen del Modelo Dimensional](./src/images/monthly_flight_fact.jpg)
 
+***
 ##ARQUITECTURA DEL DATA LAKE
 ![Imagen del Modelo Dimensional](./src/images/Diagrama de Arquitectura.jpg)
-
+***
 ###Componentes de la arquitectura
 <p style="text-align:justify">
 Los componentes mínimos que se necesitan para implementar un data lake son:
 
-1. Data sources
+- **1. Data sources**
 Son fuentes de datos muy parecidas a las de un DW que funcionan como inputs para el data
 lake
 
-2. Data Lake
+
+- **2. Data Lake**
 Está compuesto por las siguiente layers que pueden ser llamadas tambien Tiers o raw zone,
 las cuales son las siguientes:
 
-2.1. Raw data zone: Aquí básicamente todos los datos son injestados en su formato natural y no
+  - *2.1. Raw data zone:*
+Aquí básicamente todos los datos son injestados en su formato natural y no
 son alterados pueden ser a través de un formato en bash por medio de un proceso que se
 ejecuta cada cierto tiempo, aquí se habilita a que los usuarios puedan acceder a los datos sin
 ninguna transformación
 
-2.2. Process zone: En esta zona se tienen datos a medio procesar (parcialmente procesados) es
+  - *2.2. Process zone:* En esta zona se tienen datos a medio procesar (parcialmente procesados) es
 donde están todos los pipelines (proceso que transforma datos) toman como input lo que
 tiene el raw layer zone.
 
-2.3. Access zone: Capa de presentación, aquí están los datos listos para poder ser consumidos por
+  - *2.3. Access zone:* Capa de presentación, aquí están los datos listos para poder ser consumidos por
 x o y herramienta, por ejemplo, Tableu, Power Bi, algoritmos de machine learning etc.
 
-2.4. Govern Zone: Contiene un conjunto de reglas y políticas de como administramos los datos
+  - *2.4. Govern Zone:* Contiene un conjunto de reglas y políticas de como administramos los datos
 administrados en el data lake, esto nos ayuda a mantener los datos ordenados, esto se aplica
 a todos los layers e incluye la administración de seguridad, accesos y permisos.
 
-3. Data Comsuption
+
+- **3. Data Comsuption**
 En esta región se presentarán los datos a través de Dashboards y reportes que son de utilidad
 en el proceso de toma de decisiones para los usuarios tácticos y estratégicos.
 </p>
 
+***
 ##ENTREGABLES
 ###Scripts de spark utilizados para ETL
 
-###Scripts de creación de tablas en redshif
+
+###Scripts de creación de tablas en redshift
+1. [Script airline_dimension](./src/scripts redshift/airline_dimension.sql)
+2. [Script airport_dimension](./src/scripts redshift/airport_dimension.sql)
+3. [Script date_dimension](./src/scripts redshift/date_dimension.sql)
+4. [Script monthly_dimension](./src/scripts redshift/monthly_dimension.sql)
+5. [Script plane_dimension](./src/scripts redshift/plane_dimension.sql)
+6. [Script time_dimension](./src/scripts redshift/time_dimension.sql)
+7. [Script flight_fact](./src/scripts redshift/flight_fact.sql)
+8. [Script monthly_flight_fact](./src/scripts redshift/monthly_flight_fact.sql)
