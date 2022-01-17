@@ -49,17 +49,17 @@ las compañías de vuelos estadounidenses, del cual se ha realizado de manera ge
 planteamiento del problema mediante enfoque de sistemas que se detalla en los siguientes puntos.</p>
 
 ***
-##RESULTADOS DEL DATA PROFILING
+## RESULTADOS DEL DATA PROFILING
 
 Mediante Pandas Profiling se realizó un análisis detallado de cada dataset utilizado para crear el data
 warehouse, el resultado de dicho análisis general es el siguiente:
 
-1. [Profiling Airlines](./src/data profiling/Airline.html)
-2. [Profiling Airports](./src/data profiling/Airport.html)
-3. [Profiling Flights](./src/data profiling/Fligth.html)
-4. [Profiling Passangers](./src/data profiling/Passangers.html)
-5. [Profiling Planes](./src/data profiling/Plane.html)
-6. [Profiling WAC](./src/data profiling/WAC.html)
+1. [Profiling Airlines](src/data_profiling/Airline.html)
+2. [Profiling Airports](src/data_profiling/Airport.html)
+3. [Profiling Flights](src/data_profiling/Fligth.html)
+4. [Profiling Passangers](src/data_profiling/Passangers.html)
+5. [Profiling Planes](src/data_profiling/Plane.html)
+6. [Profiling WAC](src/data_profiling/WAC.html)
 
 ***
 ## MODELO DIMENSIONAL PROPUESTO
@@ -185,10 +185,10 @@ Dimension del modelo
 ![Imagen del Modelo Dimensional](./src/images/monthly_flight_fact.jpg)
 
 ***
-##ARQUITECTURA DEL DATA LAKE
-![Imagen del Modelo Dimensional](./src/images/Diagrama de Arquitectura.jpg)
+## ARQUITECTURA DEL DATA LAKE
+![Imagen del Diagrama de Arquitectura](./src/images/diagrama_arquitectura.jpg)
 ***
-###Componentes de la arquitectura
+### Componentes de la arquitectura
 <p style="text-align:justify">
 Los componentes mínimos que se necesitan para implementar un data lake son:
 
@@ -225,16 +225,16 @@ en el proceso de toma de decisiones para los usuarios tácticos y estratégicos.
 </p>
 
 ***
-##ENTREGABLES
-###Scripts de spark utilizados para ETL
+## ENTREGABLES
+### Scripts de spark utilizados para ETL
 
 
-###Scripts de creación de tablas en redshift
-1. [Script airline_dimension](./src/scripts redshift/airline_dimension.sql)
-2. [Script airport_dimension](./src/scripts redshift/airport_dimension.sql)
-3. [Script date_dimension](./src/scripts redshift/date_dimension.sql)
-4. [Script monthly_dimension](./src/scripts redshift/monthly_dimension.sql)
-5. [Script plane_dimension](./src/scripts redshift/plane_dimension.sql)
-6. [Script time_dimension](./src/scripts redshift/time_dimension.sql)
-7. [Script flight_fact](./src/scripts redshift/flight_fact.sql)
-8. [Script monthly_flight_fact](./src/scripts redshift/monthly_flight_fact.sql)
+### Scripts de creación de tablas en redshift
+1. [Script airline_dimension](./src/scripts_redshift/airline_dimension.sql)
+2. [Script airport_dimension](./src/scripts_redshift/airport_dimension.sql)
+3. [Script date_dimension](./src/scripts_redshift/date_dimension.sql)
+4. [Script monthly_dimension](./src/scripts_redshift/monthly_dimension.sql)
+5. [Script plane_dimension](./src/scripts_redshift/plane_dimension.sql)
+6. [Script time_dimension](./src/scripts_redshift/time_dimension.sql)
+7. [Script flight_fact](./src/scripts_redshift/flight_fact.sql)
+8. [Script monthly_flight_fact](./src/scripts_redshift/monthly_flight_fact.sql)
