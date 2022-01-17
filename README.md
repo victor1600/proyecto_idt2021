@@ -52,7 +52,7 @@ planteamiento del problema mediante enfoque de sistemas que se detalla en los si
 ## RESULTADOS DEL DATA PROFILING
 
 Mediante Pandas Profiling se realizó un análisis detallado de cada dataset utilizado para crear el data
-warehouse, el resultado de dicho análisis general es el siguiente:
+warehouse, el resultado de dicho análisis general descargando los reportes generados que comprende la siguiente lista:
 
 1. [Profiling Airlines](src/data_profiling/Airline.html)
 2. [Profiling Airports](src/data_profiling/Airport.html)
@@ -227,7 +227,9 @@ en el proceso de toma de decisiones para los usuarios tácticos y estratégicos.
 ***
 ## ENTREGABLES
 ### Scripts de spark utilizados para ETL
+La estructura implementada en Databricks se puede consultar descargando, importando en Databricks mediante el siguiente archivo:
 
+[*Notebook Databricks*](idt115-project-databricks-notebooks.dbc)
 
 ### Scripts de creación de tablas en redshift
 1. [Script airline_dimension](./src/scripts_redshift/airline_dimension.sql)
