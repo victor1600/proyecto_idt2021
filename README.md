@@ -52,7 +52,8 @@ planteamiento del problema mediante enfoque de sistemas que se detalla en los si
 ## RESULTADOS DEL DATA PROFILING
 
 Mediante Pandas Profiling se realizó un análisis detallado de cada dataset utilizado para crear el data
-warehouse, el resultado de dicho análisis general descargando los reportes generados que comprende la siguiente lista:
+warehouse, el resultado de dicho análisis general se visualiza descargando los reportes en formato HTML generados 
+y abriendo cada uno en un navegador web mayor detalle en la siguiente lista:
 
 1. [Profiling Airlines](src/data_profiling/Airline.html)
 2. [Profiling Airports](src/data_profiling/Airport.html)
