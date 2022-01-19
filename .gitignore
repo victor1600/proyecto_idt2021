@@ -12,4 +12,6 @@ project/plugins/project/
 .history
 .cache
 .lib/
-/src/datasets/
+*.csv
+*.crc
+*.parquet
