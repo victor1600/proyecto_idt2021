@@ -119,6 +119,10 @@ Declaración de granularidad: vuelo por día.
 
 ✓ Air_time: Tiempo de vuelo (minutos)
 
+✓ Wheels_off: Hace referencia a la hora de apagado de las ruedas del avión (hora local hhmm)
+
+✓ Wheels_on: Hace referencia a la hora de encendido de las ruedas del avión (hora local hhmm)
+
 ✓ Weather_delay: Retraso meteorológico (minutos)
 
 ✓ Nas_delay: Retraso del sistema aéreo nacional (minutos)
@@ -129,11 +133,27 @@ Declaración de granularidad: vuelo por día.
 
 ✓ Total_delay: Se calcula de la sumatoria de todos los delays
 
-𝑤𝑒𝑎𝑡ℎ𝑒𝑟𝑑𝑒𝑙𝑎𝑦 + 𝑛𝑎𝑠𝑑𝑒𝑙𝑎𝑦 + 𝑠𝑒𝑐𝑢𝑟𝑖𝑡𝑦𝑑𝑒𝑙𝑎𝑦 + 𝑙𝑎𝑡𝑒𝑎𝑖𝑟𝑐𝑟𝑎𝑓𝑡𝑑𝑒𝑙𝑎𝑦
+*FORMULA:* 𝑤𝑒𝑎𝑡ℎ𝑒𝑟𝑑𝑒𝑙𝑎𝑦 + 𝑛𝑎𝑠𝑑𝑒𝑙𝑎𝑦 + 𝑠𝑒𝑐𝑢𝑟𝑖𝑡𝑦𝑑𝑒𝑙𝑎𝑦 + 𝑙𝑎𝑡𝑒𝑎𝑖𝑟𝑐𝑟𝑎𝑓𝑡𝑑𝑒𝑙𝑎𝑦
 
 ✓ Taxi_in: Tiempo de movimiento a tiempo del avión mientras está en la pista (minutos)
 
 ✓ Taxi_out: Tiempo de salida de taxi (minutos)
+
+✓ Div1_airport_key: Codigo de aeropuerto desviado 1
+
+✓ Div1_plane_key: Codigo de avión desviado 1
+
+✓ Div1_wheels_off: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta en el aire) con relación al desvio 1 
+
+✓ Div1_wheels_on: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta tierra, aterrizando) con relación al desvio 1
+
+✓ Div2_airport_key: Codigo de aeropuerto desviado 2
+
+✓ Div2_plane_key: Codigo de avión desviado 2
+
+✓ Div2_wheels_off: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta en el aire) con relación al desvio 2
+
+✓ Div2_wheels_on: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta tierra, aterrizando) con relación al desvio 2
 
 **MODELO DIMENSIONAL**
 ***
