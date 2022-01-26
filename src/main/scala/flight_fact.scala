@@ -109,8 +109,6 @@ object flight_fact extends App {
       $"n_number" as "TailNum")
       .where(col("current_flag") === true)
 
-    val prueba = flightsDF.select(col("DepTime"))
-    prueba.show(10,false)
 
 
     // Converter hour type int as hour and minutes - DEPTIME
@@ -171,133 +169,26 @@ object flight_fact extends App {
 
 
 
-    // Converter hour type  - wheels on y wheels off
-    val cFlightDF = flightsDF
-
-      //wheels on
-      .withColumn("hourUnion", split(col("WheelsOn"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("wheels_on", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("WheelsOn","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-      //wheels off
-      .withColumn("hourUnion", split(col("WheelsOff"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("wheels_off", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("WheelsOff","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-      //Div1WheelsOff
-      .withColumn("hourUnion", split(col("Div1WheelsOff"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("div1_wheels_off", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("Div1WheelsOff","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-      //Div1WheelsOn
-      .withColumn("hourUnion", split(col("Div1WheelsOn"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("div1_wheels_on", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("Div1WheelsOn","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-      //Div2WheelsOn
-      .withColumn("hourUnion", split(col("Div2WheelsOn"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("div2_wheels_on", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("Div2WheelsOn","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-
-
-      //Div2WheelsOff
-      .withColumn("hourUnion", split(col("Div2WheelsOff"), ""))
-      .withColumn("hour1", element_at(col("hourUnion"), 1))
-      .withColumn("hour2", element_at(col("hourUnion"), 2))
-      .withColumn("min1", element_at(col("hourUnion"), 3))
-      .withColumn("min2", element_at(col("hourUnion"), 4))
-      .withColumn("old_hours", when(concat($"hour1", $"hour2") === "24", "0").otherwise(concat($"hour1", $"hour2")))
-      .withColumn("old_minute", when(concat($"min1", $"min2") === "00", "0").when(isnull(concat($"min1", $"min2")), 0).otherwise(concat($"min1", $"min2")).cast("integer"))
-      .withColumn("hour_1", when(col("min2") === "", 0).when(col("min1") === "", 0).when(col("hour2") === "", 0).when(concat($"hour1", $"hour2") === "24", 0).otherwise($"hour1"))
-      .withColumn("hour_2", when(col("min2") === "", $"hour1").when(col("min1") === "", $"hour1").when(col("hour2") === "", $"hour1").when(concat($"hour1", $"hour2") === "00", 0).otherwise($"hour2"))
-      .withColumn("minute", when(col("min2") === "", concat($"hour2", $"min1")).when(col("min1") === "", concat($"hour2", lit(0))).when(col("hour2") === "",  lit("00")).otherwise($"old_minute"))
-      .withColumn("minute_new", when(col("minute") === 60, lit("00")).otherwise($"minute"))
-      .withColumn("second", lit(0).cast("integer"))
-      .withColumn("hour", concat($"hour_1", $"hour_2").cast("integer"))
-      .withColumn("hour_new", when(col("minute") === 60, $"hour" + 1).otherwise($"hour"))
-
-      .withColumn("div2_wheels_off", concat($"hour_new",lit(":"), $"minute_new",lit(":"), $"second"))
-      .drop("Div2WheelsOff","hourUnion","hour1","hour2","min1","min2","hour_new","minute_new","old_hours","old_minute","hour_1","hour_2","second","hour", "minute")
-
-
-    cFlightDF.show(10, false)
-
+      val cFlightDF = flightsDF
+        .drop("Year", "Quarter", "FlightNum"
+          , "Month", "DayofMonth", "DayOfWeek", "UniqueCarrier", "OriginAirportSeqID",
+          "OriginCityMarketID", "Origin", "DestAirportSeqID", "DestWac", "DepDelay", "DepDelayMinutes",
+          "OriginCityName", "OriginState", "OriginStateFips", "OriginStateName", "OriginWac",
+          "DestCityMarketID", "Dest", "DestCityName", "DestState", "DestStateFips", "DestStateName",
+          "DepDel15", "DepartureDelayGroups", "DepTimeBlk", "WheelsOff", "WheelsOn", "CRSArrTime",
+          "ArrTime", "ArrDelay", "ArrDelayMinutes", "ArrDel15", "ArrivalDelayGroups", "ArrTimeBlk",
+          "CancellationCode", "CRSElapsedTime", "ActualElapsedTime", "Flights", "Distance", "DistanceGroup",
+          "CarrierDelay", "FirstDepTime", "TotalAddGTime", "LongestAddGTime", "DivAirportLandings",
+          "DivReachedDest", "DivActualElapsedTime" ,"DivArrDelay", "DivDistance", "Div1Airport",
+          "Div1AirportSeqID", "Div1WheelsOn", "Div1TotalGTime", "Div1LongestGTime", "Div1WheelsOff",
+          "Div2Airport", "Div2AirportSeqID", "Div2WheelsOn", "Div2TotalGTime", "Div2LongestGTime",
+          "Div2WheelsOff", "Div3Airport", "Div3AirportID", "Div3AirportSeqID", "Div3WheelsOn",
+          "Div3TotalGTime", "Div3LongestGTime", "Div3WheelsOff", "Div3TailNum", "Div4Airport",
+          "Div4AirportID", "Div4AirportSeqID", "Div4WheelsOn", "Div4TotalGTime", "Div4LongestGTime",
+          "Div4WheelsOff", "Div4TailNum", "Div5Airport", "Div5AirportID", "Div5AirportSeqID",
+          "Div5WheelsOn", "Div5TotalGTime", "Div5LongestGTime", "Div5WheelsOff", "Div5TailNum",
+          "Unnamed: 109"
+         )
 
 
 
@@ -305,14 +196,11 @@ object flight_fact extends App {
     val dateDimensionDF = dateDF
       .withColumn("FlightDate", col("date"))
     dateDimensionDF.printSchema()
-    dateDimensionDF.show(10, false)
+
 
     val newFlightsDF  = cFlightDF
      .join(dateDimensionDF, Seq("FlightDate"), "inner")
       .drop("day_of_week","calendar_month","calenda_quarter","calendar_year","holiday_indicator","weekday_indicator", "full_date_description")
-      newFlightsDF.show(10, false)
-
-
 
 
 
@@ -340,8 +228,6 @@ object flight_fact extends App {
         $"cancelled",
         $"diverted",
         $"AirTime" as "air_time",
-        col("wheels_off"),
-        col("wheels_on"),
         col("WeatherDelay").alias("weather_delay"),
         col("NASDelay").alias("nas_delay"),
         col("SecurityDelay").alias("security_delay"),
@@ -351,12 +237,9 @@ object flight_fact extends App {
         $"TaxiOut" as "taxi_out",
         airportDiv1DF.col("div1_airport_key"),
         $"div1_plane_key",
-        col("div1_wheels_off"),
-        col("div1_wheels_on"),
         $"div2_airport_key",
-        $"div2_plane_key",
-        col("div2_wheels_off"),
-        col("div2_wheels_on"),
+        $"div2_plane_key"
+
 
       )
     flighFactDF.show(10, false)
