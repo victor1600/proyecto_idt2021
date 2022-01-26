@@ -66,7 +66,7 @@ y abriendo cada uno en un navegador web mayor detalle en la siguiente lista:
 ## MODELO DIMENSIONAL PROPUESTO
 ### Vuelos diarios
 <p style="text-align:justify">
-NECECIDADES DEL NEGOCIO
+NECESIDADES DEL NEGOCIO
 
 a. El negocio quiere entender el comportamiento de los vuelos en un periodo de tiempo.<br>
 b. Los datos permiten el análisis de vuelos diariamente, contiene horarios de salida y llegada, programados y reales, motivo del retraso reportados por
@@ -77,7 +77,7 @@ las compañías aéreas estadounidenses.</p>
 
 **PASO 2: Declaración de la granularidad de cada fact table**
 
-Declaración de granularidad: vuelo por día.
+Declaración de granularidad: Total de vuelos por día.
 
 **PASO 3: Identificación de las dimensiones.**
 
@@ -113,15 +113,13 @@ Declaración de granularidad: vuelo por día.
 
 **PASO 4: Identificación de las métricas**
 
+✓ Crs_dep_time_key: Hora de salida programa del vuelo 
+
 ✓ Cancelled: Indicador de vuelo cancelado (1 = Si)
 
 ✓ Diverted: Indicador de vuelo desviado (1 = Si)
 
 ✓ Air_time: Tiempo de vuelo (minutos)
-
-✓ Wheels_off: Hace referencia a la hora de apagado de las ruedas del avión (hora local hhmm)
-
-✓ Wheels_on: Hace referencia a la hora de encendido de las ruedas del avión (hora local hhmm)
 
 ✓ Weather_delay: Retraso meteorológico (minutos)
 
@@ -135,34 +133,37 @@ Declaración de granularidad: vuelo por día.
 
 *FORMULA:* 𝑤𝑒𝑎𝑡ℎ𝑒𝑟𝑑𝑒𝑙𝑎𝑦 + 𝑛𝑎𝑠𝑑𝑒𝑙𝑎𝑦 + 𝑠𝑒𝑐𝑢𝑟𝑖𝑡𝑦𝑑𝑒𝑙𝑎𝑦 + 𝑙𝑎𝑡𝑒𝑎𝑖𝑟𝑐𝑟𝑎𝑓𝑡𝑑𝑒𝑙𝑎𝑦
 
-✓ Taxi_in: Tiempo de movimiento a tiempo del avión mientras está en la pista (minutos)
+✓ Taxi_in: Tiempo de movimiento a tiempo del avión mientras está en la pista aterrizando (minutos)
 
-✓ Taxi_out: Tiempo de salida de taxi (minutos)
+✓ Taxi_out: Tiempo de salida de la pista o despegue del avión (minutos)
 
-✓ Div1_airport_key: Codigo de aeropuerto desviado 1
+✓ Div1_airport_key: Código de aeropuerto desviado 1
 
-✓ Div1_plane_key: Codigo de avión desviado 1
+✓ Div1_plane_key: Código de avión desviado 1
 
-✓ Div1_wheels_off: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta en el aire) con relación al desvio 1 
+✓ Div2_airport_key: Código de aeropuerto desviado 2
 
-✓ Div1_wheels_on: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta tierra, aterrizando) con relación al desvio 1
+✓ Div2_plane_key: Código de avión desviado 2
 
-✓ Div2_airport_key: Codigo de aeropuerto desviado 2
+**Cuadro resumen del modelo dimensional**
 
-✓ Div2_plane_key: Codigo de avión desviado 2
+|                              Proceso de Negocio                             |        Nombre       | Tipo (Fact table / dimension) | TIpo de SCD |
+|:---------------------------------------------------------------------------:|:-------------------:|:-----------------------------:|:-----------:|
+|                                Total de vuelos diarios                      |   plane_dimension   | Dimensión conformada          |    SCD 2    |
+|                                                                             |  airport_dimension  | Dimensión conformada          |    SCD 2    |
+|                                                                             |  airline_dimension  | Dimension conformada          |    SCD 2    |
+|                                                                             |    time_dimension   | Dimensión conformada          |    SCD 0    |
+|                                                                             |    date_dimension   | Dimensión conformada          |    SCD 0    |
+|                                                                             |     flight_fact     | Fact table transaccional      |             |
 
-✓ Div2_wheels_off: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta en el aire) con relación al desvio 2
-
-✓ Div2_wheels_on: Tiempo en que las ruedas estan guardadas o apagadas (mientras el avion esta tierra, aterrizando) con relación al desvio 2
-
-**MODELO DIMENSIONAL**
+**DIAGRAMA DEL MODELO DIMENSIONAL**
 ***
-![Imagen del Modelo Dimensional](./src/images/flight_fact.jpg)
+![Imagen del Modelo Dimensional](src/images/Diagramas/flight_fact.png)
 ***
 
 ### Pasajeros y cargamento del avión
 <p style="text-align:justify">
-NECECIDADES DEL NEGOCIO
+NECESIDADES DEL NEGOCIO
 
 a. El negocio quiere entender el comportamiento de los vuelos según la cantidad de pasajeros y el cargamento que transporta el avión en un periodo
 de tiempo.<br>
@@ -201,13 +202,22 @@ Dimension del modelo
 
 ✓ Mail: Correo de mercadeo en vuelo incluido (libras)
 
-**MODELO DIMENSIONAL**
+**Cuadro resumen del modelo dimensional**
+
+|                              Proceso de Negocio                             |        Nombre       | Tipo (Fact table / dimension) | TIpo de SCD |
+|:---------------------------------------------------------------------------:|:-------------------:|:-----------------------------:|:-----------:|
+| Gestión de vuelos (pasajeros y cargamento)  de las aerolineas y aeropuertos |   aiport_dimension  | Dimensión conformada          |    SCD 2    |
+|                                                                             |  airline_dimension  | Dimensión conformada          |    SCD 2    |
+|                                                                             |  monthly_dimension  | Dimensión derivada            |    SCD 1    |
+|                                                                             | monthly_flight_fact | Fact table transaccional      |             |
+
+**DIAGRAMA DEL MODELO DIMENSIONAL**
 ***
-![Imagen del Modelo Dimensional](./src/images/monthly_flight_fact.jpg)
+![Imagen del Modelo Dimensional](src/images/Diagramas/monthly_flight_fact.png)
 
 ***
 ## ARQUITECTURA DEL DATA LAKE
-![Imagen del Diagrama de Arquitectura](./src/images/diagrama_arquitectura.jpg)
+![Imagen del Diagrama de Arquitectura](src/images/Diagramas/diagrama_arquitectura.jpg)
 ***
 ### Componentes de la arquitectura
 <p style="text-align:justify">
@@ -219,7 +229,7 @@ lake
 
 
 - **2. Data Lake**
-Está compuesto por las siguiente layers que pueden ser llamadas tambien Tiers o raw zone,
+Está compuesto por las siguientes layers que pueden ser llamadas también Tiers o raw zone,
 las cuales son las siguientes:
 
   - *2.1. Raw data zone:*
@@ -233,7 +243,7 @@ donde están todos los pipelines (proceso que transforma datos) toman como input
 tiene el raw layer zone.
 
   - *2.3. Access zone:* Capa de presentación, aquí están los datos listos para poder ser consumidos por
-x o y herramienta, por ejemplo, Tableu, Power Bi, algoritmos de machine learning etc.
+x o y herramienta, por ejemplo, Tableau, Power Bi, algoritmos de machine learning etc.
 
   - *2.4. Govern Zone:* Contiene un conjunto de reglas y políticas de como administramos los datos
 administrados en el data lake, esto nos ayuda a mantener los datos ordenados, esto se aplica
@@ -250,7 +260,7 @@ en el proceso de toma de decisiones para los usuarios tácticos y estratégicos.
 ### Scripts de spark utilizados para ETL
 La estructura implementada en Databricks se puede consultar descargando, importando en Databricks mediante el siguiente archivo:
 
-[*Notebook Databricks*](idt115-project-databricks-notebooks.dbc)
+Clic en el enlace: [*Notebook Databricks*](idt115-project-databricks-notebooks.dbc)
 
 ### Scripts de creación de tablas en redshift
 1. [Script airline_dimension](./src/scripts_redshift/airline_dimension.sql)
@@ -261,3 +271,54 @@ La estructura implementada en Databricks se puede consultar descargando, importa
 6. [Script time_dimension](./src/scripts_redshift/time_dimension.sql)
 7. [Script flight_fact](./src/scripts_redshift/flight_fact.sql)
 8. [Script monthly_flight_fact](./src/scripts_redshift/monthly_flight_fact.sql)
+
+###Dashboards
+
+Los dashboards diseñados para dar respuesta a las necesidades analíticas del negocio se visualizan en el archivo del siguiente enlace:
+
+Clic en el enlace:
+
+*https://tiuesedusv-my.sharepoint.com/personal/lm12013_ti_ues_edu_sv/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flm12013%5Fti%5Fues%5Fedu%5Fsv%2FDocuments%2FCurso%20de%20Especializaci%C3%B3n%20IDT115%2FProyecto%20IDT%2D2021%2FIDT%5Fproject%2FTablero%2FIDT115%5Fdashboard%2Epbix&parent=%2Fpersonal%2Flm12013%5Fti%5Fues%5Fedu%5Fsv%2FDocuments%2FCurso%20de%20Especializaci%C3%B3n%20IDT115%2FProyecto%20IDT%2D2021%2FIDT%5Fproject%2FTablero*
+
+---
+
+*1. Dashboard Airlines*
+
+**Descripción:**
+
+El siguiente dashboard contiene información relacionada con los delays (retrasos), desvíos, taxi in y taxi out que está relacionado con el tiempo
+que el avión toma para despegar o aterrizar.
+
+![Imagen Dashboard Airlines](src/images/Dashboards/airline.jpg)
+
+---
+
+*2. Dashboard Airports*
+
+**Descripción:**
+
+Con el dashboard de Aiports se detallan la cantidad de desvíos, vuelos cancelados y vuelos desviados por cada aeropuerto.
+
+![Imagen Dashboard Airport](src/images/Dashboards/airport.jpg)
+
+---
+
+*3. Dashboard Planes*
+
+**Descripción:**
+
+El dashboard plane detalla la información del avión desde el motor con el que fue fabricado hasta el año que fue producido el avión
+cuantos desvios, vuelos cancelados y retrasos ha tenido por vuelos y la ciudad en la que ha sido registrado el avión por el propietario.
+
+![Imagen Dashboard Planes](src/images/Dashboards/plane.jpg)
+
+---
+
+*3. Dashboard Flights*
+
+**Descripción:**
+
+Para el dashboard de flights se detalla el vuelo desde aeropuerto origen y destino, tendencias de los vuelos en dias festivos
+o fereados en EE. UU. vuelos desviados por cada ciudad y la cantidad de retrasos y vuelos cancelados. 
+
+![Imagen Dashboard Flights](src/images/Dashboards/flight.jpg)
