@@ -310,7 +310,7 @@ Con el dashboard de Aiports se detallan la cantidad de desvíos, vuelos cancelad
 El dashboard plane detalla la información del avión desde el motor con el que fue fabricado hasta el año que fue producido el avión
 cuantos desvios, vuelos cancelados y retrasos ha tenido por vuelos y la ciudad en la que ha sido registrado el avión por el propietario.
 
-![Imagen Dashboard Planes](src/images/Dashboards/plane.jpg)
+![Imagen Dashboard Planes](src/images/Dashboards/planes.jpg)
 
 ---
 
