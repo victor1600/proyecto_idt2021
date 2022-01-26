@@ -272,7 +272,12 @@ Clic en el enlace: [*Notebook Databricks*](idt115-project-databricks.dbc)
 7. [Script flight_fact](./src/scripts_redshift/flight_fact.sql)
 8. [Script monthly_flight_fact](./src/scripts_redshift/monthly_flight_fact.sql)
 
-###Dashboards
+### Carpeta del proyecto
+Clic en el enlace:
+*https://tiuesedusv-my.sharepoint.com/personal/lm12013_ti_ues_edu_sv/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Flm12013%5Fti%5Fues%5Fedu%5Fsv%2FDocuments%2FCurso%20de%20Especializaci%C3%B3n%20IDT115%2FProyecto%20IDT%2D2021%2FIDT%5Fproject*
+
+
+### Dashboards
 
 Los dashboards diseñados para dar respuesta a las necesidades analíticas del negocio se visualizan en el archivo del siguiente enlace:
 
