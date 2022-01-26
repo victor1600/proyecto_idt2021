@@ -260,7 +260,7 @@ en el proceso de toma de decisiones para los usuarios tácticos y estratégicos.
 ### Scripts de spark utilizados para ETL
 La estructura implementada en Databricks se puede consultar descargando, importando en Databricks mediante el siguiente archivo:
 
-Clic en el enlace: [*Notebook Databricks*](idt115-project-databricks-notebooks.dbc)
+Clic en el enlace: [*Notebook Databricks*](idt115-project-databricks.dbc)
 
 ### Scripts de creación de tablas en redshift
 1. [Script airline_dimension](./src/scripts_redshift/airline_dimension.sql)
