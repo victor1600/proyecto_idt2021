@@ -319,7 +319,7 @@ cuantos desvios, vuelos cancelados y retrasos ha tenido por vuelos y la ciudad e
 
 ---
 
-*3. Dashboard Flights*
+*4. Dashboard Flights*
 
 **Descripción:**
 
@@ -327,3 +327,13 @@ Para el dashboard de flights se detalla el vuelo desde aeropuerto origen y desti
 o fereados en EE. UU. vuelos desviados por cada ciudad y la cantidad de retrasos y vuelos cancelados. 
 
 ![Imagen Dashboard Flights](src/images/Dashboards/flight.jpg)
+
+---
+
+*5. Dashboard Monthly*
+
+**Descripción:**
+
+El siguiente dashboard especifica los datos correspondientes al cargamento de los aviones y la cantidad de pasajeros en el avión.
+
+![Imagen Dashboard Flights](src/images/Dashboards/monthly.png)
